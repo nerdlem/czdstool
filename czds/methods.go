@@ -65,11 +65,7 @@ func (s *Sess) Fetch(fName string) error {
 		return err
 	}
 
-	if err := json.Unmarshal(buf, s); err != nil {
-		return err
-	}
-
-	return nil
+	return json.Unmarshal(buf, s)
 }
 
 // String satisfies the String() interface
