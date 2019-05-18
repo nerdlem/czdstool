@@ -1,6 +1,6 @@
-[![GoDoc](https://godoc.org/github.com/nerdlem/czdstool?status.svg)](https://godoc.org/github.com/nerdlem/czds)
-[![Go Report Card](https://goreportcard.com/badge/github.com/nerdlem/czds)](https://goreportcard.com/report/github.com/nerdlem/czds)
-[![Build Status](https://travis-ci.org/nerdlem/czds.svg?branch=master)](https://travis-ci.org/nerdlem/czds)
+[![GoDoc](https://godoc.org/github.com/nerdlem/czdstool?status.svg)](https://godoc.org/github.com/nerdlem/czdstool)
+[![Go Report Card](https://goreportcard.com/badge/github.com/nerdlem/czdstool)](https://goreportcard.com/report/github.com/nerdlem/czdstool)
+[![Build Status](https://travis-ci.org/nerdlem/czdstool.svg?branch=master)](https://travis-ci.org/nerdlem/czdstool)
 
 # czdstool, command line interface to the ICANN CZDS REST API
 
@@ -19,7 +19,7 @@ go install github.com/nerdlem/czdstool
 
 ## Configuration
 
-The shipped [sample configuration][/czds.toml-example] only needs you to put your username and password. Keep that file safe — mind your file permissions — to prevent misuse.
+The shipped [sample configuration](/nerdlem/czdstool/blob/master/czds.toml-example) only needs you to put your username and password. Keep that file safe — mind your file permissions — to prevent misuse.
 
 ## Logging in
 
