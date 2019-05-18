@@ -15,7 +15,7 @@
 
 package main
 
-import "lem.click/czdstool/cmd"
+import "github.com/nerdlem/czdstool/cmd"
 
 func main() {
 	cmd.Execute()

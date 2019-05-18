@@ -20,7 +20,7 @@ import (
 	"os"
 
 	"github.com/spf13/viper"
-	"lem.click/czdstool/czds"
+	"github.com/nerdlem/czdstool/czds"
 )
 
 // Worker represents the signature of the functions we'll use to perform

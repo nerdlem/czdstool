@@ -22,7 +22,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"lem.click/czdstool/czds"
+	"github.com/nerdlem/czdstool/czds"
 )
 
 var details, zonesOnly bool
