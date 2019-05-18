@@ -1,0 +1,13 @@
+# CZDS download tool configuration file. This is just an example that needs
+# at least your credentials.
+
+[auth]
+username = "your-czds@account.example"
+password = 'Y0urV3r4s3c00r3P4$$w0Rd.'
+
+[api]
+info_workers = 2
+fetch_workers = 2
+
+[download]
+destination_dir = "./download"
