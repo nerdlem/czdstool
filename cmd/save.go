@@ -34,7 +34,7 @@ the credentials taken from the config file. If authentication is successful,
 the obtained JWT token is saved into the named file, which is to be provided
 as the only command line argument.
 
-The file is not overriden in case of failure.`,
+The file is not overridden in case of failure.`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		tokenFile = args[0]
