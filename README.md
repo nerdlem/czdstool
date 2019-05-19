@@ -94,12 +94,12 @@ Since the `--auth-file` was not used, this command actually authenticated to the
 
 If no TLDs are given to the `fetch` command, then all available TLD zones will be downloaded.
 
-By default, only zone files that are older than what is provided by the REST API will be downloaded. The `--force` cancels this behavior and forces downloading the zone file regardless of local state.
+By default, only zone files that are older than the last-modified time provided by the REST API will be downloaded. The `--force` cancels this behavior and forces downloading the zone file regardless of local state.
 
-As zone files are downloaded, their final size is compared with what's reported by the REST API, with an error being reported otherwise and the in-progress download being deleted. This behavior can be overridden with the `--keep-anyway` option.
+As zone files are downloaded, their final size is compared with the length reported by the REST API, with an error being reported otherwise and the in-progress download being deleted. This behavior can be overridden with the `--keep-anyway` option.
 
 Downloads happen atomically _ala_ `rsync`. Files are downloaded to a temporary location and, if the size check passes, are then renamed to the final intended name.
 
 ## Parallel access to the CZDS REST API
 
-The option `--info-workers` and `--fetch-workers` control the number of concurrent `HEAD` and `GET` requests used to access the zone file data. Up to 8 workers of each type are allowed.
+The option `--info-workers` and `--fetch-workers` control the number of concurrent `HEAD` and `GET` requests used to access the zone file data.
