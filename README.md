@@ -28,7 +28,7 @@ The REST API uses JWT for authentication. JWTs are cryptographically signed _blo
 `czdstool` can store the JWTs in a local file, so you can authenticate once and keep issuing commands for up to 24 hours. To have `czdstool` authenticate itself and save the JWT to a file, issue the following command:
 
 ```
-jwttool --config my-config.toml save ./my-token.jwt
+czdstool --config my-config.toml save ./my-token.jwt
 ```
 
 If all went well, the file `my-token.jwt` should now contain a JWT token that allows you to access the CZDS via the REST API.
