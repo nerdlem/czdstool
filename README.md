@@ -19,7 +19,7 @@ go install github.com/nerdlem/czdstool
 
 ## Configuration
 
-The shipped [sample configuration](/nerdlem/czdstool/blob/master/czds.toml-example) only needs you to put your username and password. Keep that file safe — mind your file permissions — to prevent misuse.
+The shipped [sample configuration](https://github.com/nerdlem/czdstool/blob/master/czds.toml-example) only needs you to put your username and password. Keep that file safe — mind your file permissions — to prevent misuse.
 
 ## Logging in
 
