@@ -19,8 +19,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/spf13/viper"
 	"github.com/nerdlem/czdstool/czds"
+	"github.com/spf13/viper"
 )
 
 // Worker represents the signature of the functions we'll use to perform
@@ -54,7 +54,7 @@ func launchParallelWorkers(w Worker, n int) chan interface{} {
 
 func fileFromURL(u string) string {
 	tld := czds.TLDFromURL(u)
-	return fmt.Sprintf("%s/%s.gz", viper.GetString("download.destination_dir"), tld)
+	return fmt.Sprintf("%s/%s.zone.gz", viper.GetString("download.destination_dir"), tld)
 }
 
 func authenticate(sess *czds.Sess) {
