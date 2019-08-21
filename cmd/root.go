@@ -53,7 +53,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is /etc/czds.toml)")
-	RootCmd.Flags().StringVarP(&tokenFile, "auth-file", "A", "", "auth file previously created with save")
+	RootCmd.PersistentFlags().StringVarP(&tokenFile, "auth-file", "A", "", "auth file previously created with save")
 	RootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output format")
 
 	RootCmd.AddCommand(saveCmd)
