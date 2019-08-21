@@ -179,6 +179,55 @@ func (s *Sess) Download(u string) (*io.ReadCloser, error) {
 	return &resp.Body, nil
 }
 
+// GetTLDsMetadata fetches the metadata for all visible TLDs via the CZDS REST
+// API
+func (s *Sess) GetTLDsMetadata() (map[string]Meta, error) {
+	req, err := http.NewRequest("GET", "https://czds-api.icann.org/czds/tlds", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	s.setupRequest(req)
+
+	cl := new(http.Client)
+	resp, err := cl.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	switch resp.StatusCode {
+	case 200:
+		// Do nothing, simply leak out of the switch
+	case 400:
+		return nil, ErrBadRequest
+	case 500:
+		return nil, ErrInternalServer
+	default:
+		return nil, fmt.Errorf("Unexpected status code %d returned by CZDS API", resp.StatusCode)
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var tldList []Meta
+
+	err = json.Unmarshal(body, &tldList)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := make(map[string]Meta, len(tldList))
+	for _, t := range tldList {
+		ret[t.Name] = t
+	}
+
+	return ret, nil
+}
+
 // Details queries the information about a TLD zone file as fetched via the
 // ICANN CZDS REST API
 func (s *Sess) Details(u string) (*Details, error) {
@@ -272,4 +321,9 @@ func (s *Sess) List() (*[]string, error) {
 func (d *Details) String() string {
 	buf, _ := json.Marshal(d)
 	return string(buf)
+}
+
+func (m *Meta) String() string {
+	return fmt.Sprintf("tld=%s ulabel=%s status=%s sftp=%t",
+		m.Name, m.Ulabel, m.Status, m.SFTP)
 }

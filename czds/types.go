@@ -63,3 +63,11 @@ type Details struct {
 	ContentLength int       `json:"content_length"`
 	ContentType   string    `json:"content_type"`
 }
+
+// Meta encodes the TLD metadata provided by the ICANN CADS REST API
+type Meta struct {
+	Name   string `json:"tld"`
+	Ulabel string `json:"ulable"`
+	Status string `json:"currentStatus"`
+	SFTP   bool   `json:"sftp"`
+}

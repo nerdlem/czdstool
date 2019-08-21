@@ -20,9 +20,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/nerdlem/czdstool/czds"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/nerdlem/czdstool/czds"
 )
 
 var cfgFile string
@@ -57,6 +57,9 @@ func init() {
 	RootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output format")
 
 	RootCmd.AddCommand(saveCmd)
+
+	RootCmd.AddCommand(tldsCmd)
+	tldsCmd.Flags().BoolVarP(&tJSON, "json", "J", false, "Produce output in JSON")
 
 	RootCmd.AddCommand(lsCmd)
 	// tokenFile from save
