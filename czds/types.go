@@ -22,10 +22,6 @@ import (
 )
 
 var (
-	// AuthURL is the Authentication URL for ICANN CZDS REST API
-	AuthURL = "https://account-api.icann.org/api/authenticate"
-	// APIURL is the Base API URL for ICANN CZDS REST API
-	APIURL = "https://czds-api.icann.org"
 	// UserAgent is the default user agent string to use
 	UserAgent = "czdstool/0.1 mailto:tools@libertad.link"
 	// ErrNoCred is returned when username or password are empty
@@ -70,4 +66,12 @@ type Meta struct {
 	Ulabel string `json:"ulable"`
 	Status string `json:"currentStatus"`
 	SFTP   bool   `json:"sftp"`
+}
+
+// TLDRequest represents a request to access TLDs
+type TLDRequest struct {
+	AllTLDs bool     `json:"allTlds"`
+	TLD     []string `json:"tldNames"`
+	Reason  string   `json:"reason"`
+	Version string   `json:"tcVersion"`
 }

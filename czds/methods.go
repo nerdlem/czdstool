@@ -28,11 +28,22 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/spf13/viper"
 )
+
+// TermsAndConditions represents the T&C data fetched from ICANN CZDS
+type TermsAndConditions struct {
+	Version    string    `json:"version"`
+	Content    string    `json:"content"`
+	ContentURL string    `json:"contentUrl"`
+	Created    time.Time `json:"created"`
+}
 
 // Sess is the descriptor for an active API session with the ICANN CZDS
 type Sess struct {
 	AccessToken string `json:"accessToken"`
+	TermsAndConditions
 }
 
 // NewSession returns a virgin Sess
@@ -74,6 +85,109 @@ func (s *Sess) String() string {
 	return string(buf)
 }
 
+// MaybeGetTCVersion attempts to fetch the T&C version for automatic
+// acknowledgement.
+func (s *Sess) MaybeGetTCVersion() error {
+	u := fmt.Sprintf("%s/czds/terms/condition/", viper.GetString("api.url"))
+	req, err := http.NewRequest("GET", u, nil)
+	if err != nil {
+		return err
+	}
+
+	if s.TermsAndConditions.Version != "" {
+		return nil
+	}
+
+	s.setupRequest(req)
+
+	cl := new(http.Client)
+	resp, err := cl.Do(req)
+	if err != nil {
+		return err
+	}
+
+	switch resp.StatusCode {
+	case 200:
+		// Do nothing, simply leak out of the switch
+	case 400:
+		return ErrBadRequest
+	case 403:
+		return ErrNoPermission
+	case 409:
+		return ErrTCRequired
+	default:
+		return fmt.Errorf("Unexpected status code %d returned by %s endpoint",
+			resp.StatusCode, u)
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(body, &s.TermsAndConditions)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// RequestAccess requests access to a list of TLDs using the CZDS API. Note that
+// T&Cs are acknowledged automatically.
+func (s *Sess) RequestAccess(tlds []string) error {
+
+	if err := s.MaybeGetTCVersion(); err != nil {
+		return err
+	}
+
+	payload, _ := json.Marshal(TLDRequest{
+		TLD:     tlds,
+		Reason:  viper.GetString("czds.reason"),
+		Version: s.TermsAndConditions.Version,
+	})
+
+	pr := bytes.NewReader(payload)
+	u := fmt.Sprintf("%s/czds/requests/create", viper.GetString("api.url"))
+
+	req, err := http.NewRequest("POST", u, pr)
+	if err != nil {
+		return err
+	}
+
+	s.setupRequest(req)
+
+	cl := new(http.Client)
+
+	resp, err := cl.Do(req)
+	if err != nil {
+		return err
+	}
+
+	switch resp.StatusCode {
+	case 200:
+		// Do nothing, simply leak out of the switch
+	case 400:
+		return ErrBadRequest
+	case 401:
+		return ErrInvalidCredentials
+	case 415:
+		return ErrUnsupportedContent
+	case 429:
+		return ErrTooManyRequest
+	case 500:
+		return ErrInternalServer
+	default:
+		return fmt.Errorf("Unexpected status code %d returned by %s endpoint", resp.StatusCode, u)
+	}
+
+	defer resp.Body.Close()
+
+	return nil
+}
+
 // Login attempts to authenticate to the ICANN REST API, obtaining a JWT which
 // is stored in the returned Sess object
 func (s *Sess) Login(username, password string) error {
@@ -88,6 +202,8 @@ func (s *Sess) Login(username, password string) error {
 
 	payload, _ := json.Marshal(cred)
 	pr := bytes.NewReader(payload)
+
+	AuthURL := viper.GetString("api.auth_url")
 
 	resp, err := http.Post(AuthURL, "application/json", pr)
 	if err != nil {
@@ -137,7 +253,8 @@ func TLDFromURL(u string) string {
 
 // URLFromTLD returns the URL associated with a TLD name
 func URLFromTLD(t string) string {
-	return fmt.Sprintf("%s/czds/downloads/%s.zone", APIURL, strings.ToLower(t))
+	return fmt.Sprintf("%s/czds/downloads/%s.zone",
+		viper.GetString("api.url"), strings.ToLower(t))
 }
 
 func (s *Sess) setupRequest(req *http.Request) {
@@ -275,7 +392,8 @@ func (s *Sess) Details(u string) (*Details, error) {
 
 // List provides a list of TLD zone file URLs available for download
 func (s *Sess) List() (*[]string, error) {
-	theURL := fmt.Sprintf("%s/%s", APIURL, "czds/downloads/links")
+	theURL := fmt.Sprintf("%s/%s",
+		viper.GetString("api.url"), "/czds/downloads/links")
 
 	req, err := http.NewRequest("GET", theURL, nil)
 	if err != nil {
@@ -326,4 +444,10 @@ func (d *Details) String() string {
 func (m *Meta) String() string {
 	return fmt.Sprintf("tld=%s ulabel=%s status=%s sftp=%t",
 		m.Name, m.Ulabel, m.Status, m.SFTP)
+}
+
+// String satisfies the String() interface
+func (tc *TermsAndConditions) String() string {
+	return fmt.Sprintf("Version: %s\nDate: %s\nURL: %s\nContent:\n%s\n",
+		tc.Version, tc.Created, tc.ContentURL, tc.Content)
 }

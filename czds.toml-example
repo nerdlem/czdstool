@@ -6,8 +6,16 @@ username = "your-czds@account.example"
 password = 'Y0urV3r4s3c00r3P4$$w0Rd.'
 
 [api]
-info_workers = 2
+info_workers  = 2
 fetch_workers = 2
+url           = "https://czds-api.icann.org"
+auth_url      = "https://account-api.icann.org/api/authenticate"
 
 [download]
 destination_dir = "./download"
+
+[czds]
+reason = """
+I need to access the zone file for research matters consistent
+with CZDS terms and conditions.
+"""

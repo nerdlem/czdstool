@@ -61,6 +61,8 @@ func init() {
 	RootCmd.AddCommand(tldsCmd)
 	tldsCmd.Flags().BoolVarP(&tJSON, "json", "J", false, "Produce output in JSON")
 
+	RootCmd.AddCommand(requestCmd)
+
 	RootCmd.AddCommand(lsCmd)
 	// tokenFile from save
 	lsCmd.Flags().StringVarP(&tokenFile, "auth-file", "A", "", "auth file previously created with save")
@@ -83,6 +85,8 @@ func init() {
 	viper.BindPFlag("api.fetch_workers", fetchCmd.Flags().Lookup("fetch-workers"))
 	viper.BindPFlag("download.destination_dir", fetchCmd.Flags().Lookup("destination-dir"))
 
+	viper.SetDefault("api.auth_url", "https://account-api.icann.org/api/authenticate")
+	viper.SetDefault("api.url", "https://czds.icann.org")
 	viper.SetDefault("api.fetch_workers", "4")
 	viper.SetDefault("download.destination_dir", "./")
 
