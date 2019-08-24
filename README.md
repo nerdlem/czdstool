@@ -103,3 +103,7 @@ Downloads happen atomically _ala_ `rsync`. Files are downloaded to a temporary l
 ## Parallel access to the CZDS REST API
 
 The option `--info-workers` and `--fetch-workers` control the number of concurrent `HEAD` and `GET` requests used to access the zone file data.
+
+## Requesting access to tlds
+
+The `request` command automatically requests access to the TLDs provided in the command line.
