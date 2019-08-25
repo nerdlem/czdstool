@@ -16,6 +16,7 @@ package cmd
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -33,7 +34,8 @@ perform on appropriate TLDs based on status.`,
 		authenticate(s)
 
 		if err := s.RequestAccess(args); err != nil {
-			panic(err)
+			fmt.Fprintf(os.Stderr, "request returned an error: %s\n", err)
+			os.Exit(1)
 		}
 
 		os.Exit(0)
