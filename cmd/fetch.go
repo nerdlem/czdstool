@@ -83,9 +83,10 @@ func fetchZone(i interface{}) {
 	e := i.(Existing)
 
 	if verbose {
+		start := time.Now()
 		defer func(e *Existing, s time.Time) {
 			fmt.Fprintf(os.Stderr, "processing of %s took %s\n", e.FileName, time.Now().Sub(s).String())
-		}(&e, time.Now())
+		}(&e, start)
 	}
 
 	tmpFile := fmt.Sprintf("%s.tmp", e.FileName)
