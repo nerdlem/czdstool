@@ -19,10 +19,11 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
 
+	"github.com/nerdlem/czdstool/czds"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/nerdlem/czdstool/czds"
 )
 
 var destinationDir string
@@ -78,7 +79,15 @@ func lookupAndCheck(i interface{}) {
 }
 
 func fetchZone(i interface{}) {
+
 	e := i.(Existing)
+
+	if verbose {
+		defer func(e *Existing, s time.Time) {
+			fmt.Fprintf(os.Stderr, "processing of %s took %s\n", e.FileName, time.Now().Sub(s).String())
+		}(&e, time.Now())
+	}
+
 	tmpFile := fmt.Sprintf("%s.tmp", e.FileName)
 
 	if verbose {
