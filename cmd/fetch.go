@@ -156,7 +156,7 @@ provided via the ICANN CZDS REST API.`,
 			started = time.Now()
 			fmt.Fprintf(os.Stderr, "beginning fetch process\n")
 			defer func(s time.Time) {
-				fmt.Fprintf(os.Stderr, "fetch process took %s\n", time.Now().Sub(started).String())
+				fmt.Fprintf(os.Stderr, "fetch process took %s\n", time.Now().Sub(s).String())
 			}(started)
 		}
 
