@@ -79,13 +79,18 @@ func lookupAndCheck(i interface{}) {
 }
 
 func fetchZone(i interface{}) {
+	var copied int64
+	var err error
+	var reader *io.ReadCloser
+	var fh *os.File
 
 	e := i.(Existing)
 
 	if verbose {
 		start := time.Now()
 		defer func(e *Existing, s time.Time) {
-			fmt.Fprintf(os.Stderr, "processing of %s took %s\n", e.FileName, time.Now().Sub(s).String())
+			fmt.Fprintf(os.Stderr, "fetching of %s for %d bytes took %s\n",
+				e.FileName, copied, time.Now().Sub(s).String())
 		}(&e, start)
 	}
 
@@ -95,7 +100,7 @@ func fetchZone(i interface{}) {
 		fmt.Fprintf(os.Stderr, "will fetch %s via %s\n", e.FileName, e.URL)
 	}
 
-	reader, err := s.Download(e.URL)
+	reader, err = s.Download(e.URL)
 	defer (*reader).Close()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
@@ -103,14 +108,14 @@ func fetchZone(i interface{}) {
 		return
 	}
 
-	fh, err := os.Create(tmpFile)
+	fh, err = os.Create(tmpFile)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "file create %s: %s\n", e.FileName, err)
 		wg.Done()
 		return
 	}
 
-	copied, err := io.Copy(fh, io.Reader(*reader))
+	copied, err = io.Copy(fh, io.Reader(*reader))
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "writing zone file from %s to %s: %s\n", e.URL, tmpFile, err)
@@ -127,10 +132,6 @@ func fetchZone(i interface{}) {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "moving %s to %s: %s\n", tmpFile, e.FileName, err)
 		os.Remove(tmpFile)
-	}
-
-	if verbose {
-		fmt.Fprintf(os.Stderr, "zone file from %s writte to %s for %d bytes\n", e.URL, e.FileName, copied)
 	}
 
 	wg.Done()
