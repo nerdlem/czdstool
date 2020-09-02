@@ -150,13 +150,10 @@ provided via the ICANN CZDS REST API.`,
 		if verbose {
 			started = time.Now()
 			fmt.Fprintf(os.Stderr, "beginning fetch process\n")
-		}
-
-		defer func(v bool, s time.Time) {
-			if v {
+			defer func(s time.Time) {
 				fmt.Fprintf(os.Stderr, "fetch process took %s\n", time.Now().Sub(started).String())
-			}
-		}(verbose, started)
+			}(started)
+		}
 
 		sc := launchParallelWorkers(lookupAndCheck, viper.GetInt("api.info_workers"))
 		fc = launchParallelWorkers(fetchZone, viper.GetInt("api.fetch_workers"))
