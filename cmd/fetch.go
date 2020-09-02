@@ -155,9 +155,6 @@ provided via the ICANN CZDS REST API.`,
 		if verbose {
 			started = time.Now()
 			fmt.Fprintf(os.Stderr, "beginning fetch process\n")
-			defer func(s time.Time) {
-				fmt.Fprintf(os.Stderr, "fetch process took %s\n", time.Now().Sub(s).String())
-			}(started)
 		}
 
 		sc := launchParallelWorkers(lookupAndCheck, viper.GetInt("api.info_workers"))
@@ -198,6 +195,11 @@ provided via the ICANN CZDS REST API.`,
 		}
 
 		wg.Wait()
+
+		if verbose {
+			fmt.Fprintf(os.Stderr, "fetch process took %s\n", time.Now().Sub(started).String())
+		}
+
 		os.Exit(0)
 	},
 }
