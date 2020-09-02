@@ -129,6 +129,10 @@ func fetchZone(i interface{}) {
 		os.Remove(tmpFile)
 	}
 
+	if verbose {
+		fmt.Fprintf(os.Stderr, "zone file from %s writte to %s for %d bytes\n", e.URL, e.FileName, copied)
+	}
+
 	wg.Done()
 }
 
