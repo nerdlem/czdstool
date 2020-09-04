@@ -47,8 +47,9 @@ func lookupAndCheck(i interface{}) {
 	}
 
 	e := Existing{
-		URL:      u,
-		FileName: fileFromURL(u),
+		URL:       u,
+		FileName:  fileFromURL(u),
+		APILength: int64(det.ContentLength),
 	}
 
 	stat, err := os.Stat(e.FileName)
@@ -98,7 +99,7 @@ func fetchZone(i interface{}) {
 	tmpFile := fmt.Sprintf("%s.tmp", e.FileName)
 
 	if verbose {
-		fmt.Fprintf(os.Stderr, "will fetch %s via %s\n", e.FileName, e.URL)
+		fmt.Fprintf(os.Stderr, "will fetch %s via %s for %d bytes\n", e.FileName, e.URL, e.APILength)
 	}
 
 	reader, err = s.Download(e.URL)
@@ -118,12 +119,12 @@ func fetchZone(i interface{}) {
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "writing zone file from %s to %s (%d bytes out of %d): %s\n",
-			e.URL, tmpFile, e.Length, copied, err)
+			e.URL, tmpFile, copied, e.APILength, err)
 		os.Remove(tmpFile)
 		return
 	}
 
-	if e.Length > 0 && copied != e.Length {
+	if e.Length > 0 && copied != e.APILength {
 		fmt.Fprintf(os.Stderr, "API reported length of %s as %d but wrote %d bytes\n",
 			e.URL, e.Length, copied)
 		os.Remove(tmpFile)

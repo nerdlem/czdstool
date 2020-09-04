@@ -35,6 +35,8 @@ type Existing struct {
 	FileName string
 	// Length is the size of the actual zone file to download
 	Length int64
+	// APILength represents the zone size as returned by the API
+	APILength int64
 }
 
 func launchParallelWorkers(w Worker, n int) chan interface{} {
