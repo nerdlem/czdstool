@@ -85,6 +85,7 @@ func fetchZone(i interface{}) {
 	var fh *os.File
 
 	e := i.(Existing)
+	defer wg.Done()
 
 	if verbose {
 		start := time.Now()
@@ -104,28 +105,29 @@ func fetchZone(i interface{}) {
 	defer (*reader).Close()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
-		wg.Done()
 		return
 	}
 
 	fh, err = os.Create(tmpFile)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "file create %s: %s\n", e.FileName, err)
-		wg.Done()
 		return
 	}
 
 	copied, err = io.Copy(fh, io.Reader(*reader))
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "writing zone file from %s to %s: %s\n", e.URL, tmpFile, err)
-	} else {
-		if e.Length > 0 && copied != e.Length {
-			fmt.Fprintf(os.Stderr, "API reported length of %s as %d but wrote %d bytes\n", e.URL, e.Length, copied)
-			os.Remove(tmpFile)
-			wg.Done()
-			return
-		}
+		fmt.Fprintf(os.Stderr, "writing zone file from %s to %s (%d bytes out of %d): %s\n",
+			e.URL, tmpFile, e.Length, copied, err)
+		os.Remove(tmpFile)
+		return
+	}
+
+	if e.Length > 0 && copied != e.Length {
+		fmt.Fprintf(os.Stderr, "API reported length of %s as %d but wrote %d bytes\n",
+			e.URL, e.Length, copied)
+		os.Remove(tmpFile)
+		return
 	}
 
 	err = os.Rename(tmpFile, e.FileName)
@@ -134,7 +136,7 @@ func fetchZone(i interface{}) {
 		os.Remove(tmpFile)
 	}
 
-	wg.Done()
+	return
 }
 
 // fetchCmd represents the ls command
