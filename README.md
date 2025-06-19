@@ -13,8 +13,7 @@ In order to use this tool, you'll need to access the CZDS system and complete yo
 This should be a matter of
 
 ```
-go get github.com/nerdlem/czdstool
-go install github.com/nerdlem/czdstool
+go install github.com/nerdlem/czdstool@latest
 ```
 
 ## Configuration
