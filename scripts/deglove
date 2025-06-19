@@ -1,0 +1,26 @@
+#!/bin/bash
+#
+# Extract the desired files from a zipped CSV distribution such as the one
+# used by Cisco Umbrella, Tranco and Majestic.
+#
+# Usage: deglove <input.zip> <file> <column> <destination>
+# Example: deglove input.zip top-1m.csv 1 output
+#
+# The example above will extract file top-1m.csv from the zip archive, pull
+# column number one and save the output to file output.csv.gz.
+#
+# © Luis E. Muñoz
+
+set -e
+PATH=/bin:/usr/bin:/usr/local/bin
+
+if [ $# -ne 4 ]; then
+    echo "Usage: $0 <input.zip> <file> <column> <destination>"
+    exit 1
+fi
+
+unzip -p "${1}" "${2}" \
+    | csvtool col "${3}" - \
+    | tr A-Z a-z \
+    | sort -u \
+    | gzip --best > "$4.csv.gz"

@@ -1,0 +1,37 @@
+#!/bin/bash
+#
+# Generate a list of domains derived from all fresh, available zone files as downloaded
+# from the CZDS. Run this daily from cron. You might want to customize file
+# locations, number of processes, and how many days to keep the output files
+# using the variables below.
+#
+# © Luis E. Muñoz
+
+set -e
+
+PATH=/bin:/usr/bin:/usr/local/bin
+
+SOURCEDIR=${SOURCEDIR:=/var/spool/sources/czds}
+DEST=${DEST:=/var/spool/sources/domains}
+DESTFILE=${DESTFILE:=$(date +"${DEST}/all-domains-%Y%m%d.csv.gz")}
+PROCS=${PROCS:=4}
+KEEPDAYS=${KEEPDAYS:=15}
+
+function doms {
+     gunzip -c "$1" \
+   | egrep  -i '\sin\sns\s' \
+   | awk '{ print $1}' \
+   | tr A-Z a-z \
+   | sort -u \
+   | egrep -v '^[^\.]+\.$'
+}
+
+export -f doms
+
+find "${SOURCEDIR}" -name '*.zone.gz' -type f -mtime -2 \
+| xargs --max-args 1  --max-procs "${PROCS}" --no-run-if-empty /bin/bash -c 'doms "$0"' \
+| gzip --best > "${DESTFILE}"
+
+find "${DEST}" -name 'all-domains-*.csv.gz' -type f -mtime "+${KEEPDAYS}" -delete
+
+exit 0
