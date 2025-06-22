@@ -1,0 +1,28 @@
+#!/bin/bash
+#
+# Process a list of domains, possibly derived from CZDS zone data, and load MX
+# records into a database for further analysis.
+#
+# © Luis E. Muñoz
+
+set -e
+
+PATH=/bin:/usr/bin:/usr/local/bin
+
+SOURCEDIR=${SOURCEDIR:=/var/spool/sources/domains}
+PGL_ROOTDIR=${PGL_ROOTDIR:=/tmp/pgloader-domains}
+PGL_CONFIG=${PGL_CONFIG:=/etc/dns-mx.pgloader}
+
+find /var/spool/sources/domains/ \
+  -name 'all-domains*' \
+  -mtime -5 \
+| sort -rn \
+| head -1 \
+| xargs --no-run-if-empty -n 1 zcat \
+| dnsx -silent -mx -resp -no-color --list - \
+| grep -F '[MX]' \
+| grep -vF '[]' \
+| sed -e 's/ \[MX\] /,/' -e 's/\.,/,/g' | tr -d ' []' \
+| pgloader --quiet --root-dir "${PGL_ROOTDIR}" "${PGL_CONFIG}"
+
+exit 0
