@@ -30,7 +30,9 @@ export -f doms
 
 find "${SOURCEDIR}" -name '*.zone.gz' -type f -mtime -2 \
 | xargs --max-args 1  --max-procs "${PROCS}" --no-run-if-empty /bin/bash -c 'doms "$0"' \
-| gzip --best > "${DESTFILE}"
+| gzip --best > "${DESTFILE}.tmp"
+
+mv "${DESTFILE}.tmp" "${DESTFILE}"
 
 find "${DEST}" -name 'all-domains-*.csv.gz' -type f -mtime "+${KEEPDAYS}" -delete
 
