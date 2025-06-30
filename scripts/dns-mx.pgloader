@@ -22,7 +22,9 @@ TARGET COLUMNS
 WITH fields not enclosed,
      fields escaped by backslash-quote,
      trim unquoted blanks,
-     fields terminated by ','
+     fields terminated by ',',
+     batch rows = 300,
+     prefetch rows = 1000
 
 SET work_mem to '32 MB', search_path to 'dns'
 

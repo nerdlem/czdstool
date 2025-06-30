@@ -12,17 +12,71 @@ PATH=/bin:/usr/bin:/usr/local/bin
 SOURCEDIR=${SOURCEDIR:=/var/spool/sources/domains}
 PGL_ROOTDIR=${PGL_ROOTDIR:=/tmp/pgloader-domains}
 PGL_CONFIG=${PGL_CONFIG:=/etc/dns-mx.pgloader}
+DNSX_FLAGS=${DNSX_FLAGS:=}
 
-find /var/spool/sources/domains/ \
-  -name 'all-domains*' \
-  -mtime -5 \
-| sort -rn \
-| head -1 \
-| xargs --no-run-if-empty -n 1 zcat \
-| dnsx -silent -mx -resp -no-color --list - \
-| grep -F '[MX]' \
-| grep -vF '[]' \
-| sed -e 's/ \[MX\] /,/' -e 's/\.,/,/g' | tr -d ' []' \
-| pgloader --quiet --root-dir "${PGL_ROOTDIR}" "${PGL_CONFIG}"
+# Extract a unique, normalized list of domain names from the most recent
+# collection file available—not older than 5 days.
+
+function extract() {
+  find /var/spool/sources/domains/ \
+      -name 'all-domains*.csv.gz' \
+      -mtime -5 \
+    | sort -rn \
+    | head -1 \
+    | xargs --no-run-if-empty -n 1 zcat
+}
+
+# Process a subset of the domain name list. The indicated range is passed as a
+# parameter so that each relevant utility can generate logs and temporary
+# failes separately. Those directories are deleted and recreated on each run
+# so that they can survive between subsequent runs for troubleshooting.
+
+function process() {
+  local range="$1"
+  local pgl_root="${PGL_ROOTDIR}-${range}"
+  local dnsx_tmpdir="/tmp/dnsx-${range}"
+  [ -d "${pgl_root}" ] && rm -rf "${pgl_root}"
+  [ -d "${dnsx_tmpdir}" ] && rm -rf "${dnsx_tmpdir}"
+  mkdir -p "${pgl_root}" "${dnsx_tmpdir}" || true
+
+  echo "Processing range ${range}, pgl=${pgl_root} dnsx=${dnsx_tmpdir}" \
+    | tee ${pgl_root}/pgloader.log
+
+  TMPDIR="${dnsx_tmpdir}" \
+  dnsx -silent -mx -resp -no-color ${DNSX_FLAGS} -list - \
+    | grep -F '[MX]' \
+    | grep -vF '[]' \
+    | sed -e 's/ \[MX\] /,/' -e 's/\.,/,/g' | tr -d ' []' \
+    | pgloader --quiet --root-dir "${pgl_root}" "${PGL_CONFIG}"
+}
+
+# Initialize the named pipes we will be using for this task
+
+rm -f /tmp/dns-mx-0-g /tmp/dns-mx-h-q /tmp/dns-mx-r-z
+mkfifo /tmp/dns-mx-0-g /tmp/dns-mx-h-q /tmp/dns-mx-r-z
+
+# We need to keep track of the pids of our reader processes below
+
+pids=()
+
+process '0-g' < /tmp/dns-mx-0-g & pids+=($!); echo "Processor for 0-g range at pid $!..."
+process 'h-q' < /tmp/dns-mx-h-q & pids+=($!); echo "Processor for h-q range at pid $!..."
+process 'r-z' < /tmp/dns-mx-r-z & pids+=($!); echo "Processor for r-z range at pid $!..."
+
+# These groups have been chosen to balance loading a large set of domains on
+# my own hardware and setup. You will likely need to adjust this to your own
+# environment.
+
+extract | tee \
+  >( grep -i '^[0-g]' > /tmp/dns-mx-0-g ) \
+  >( grep -i '^[h-q]' > /tmp/dns-mx-h-q ) \
+  >( grep -i '^[r-z]' > /tmp/dns-mx-r-z ) \
+  > /dev/null
+
+echo "Extraction complete. Waiting for jobs to finish..."
+
+for pid in "${pids[@]}"; do
+  wait "$pid"
+done
 
 exit 0
