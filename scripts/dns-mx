@@ -10,6 +10,7 @@ set -e
 PATH=/bin:/usr/bin:/usr/local/bin
 
 SOURCEDIR=${SOURCEDIR:=/var/spool/sources/domains}
+SOURCEPATTERN=${SOURCEPATTERN:='all-domains*.csv.gz'}
 PGL_ROOTDIR=${PGL_ROOTDIR:=/tmp/pgloader-domains}
 PGL_CONFIG=${PGL_CONFIG:=/etc/dns-mx.pgloader}
 DNSX_FLAGS=${DNSX_FLAGS:=}
@@ -19,7 +20,7 @@ DNSX_FLAGS=${DNSX_FLAGS:=}
 
 function extract() {
   find /var/spool/sources/domains/ \
-      -name 'all-domains*.csv.gz' \
+      -name "${SOURCEPATTERN} \
       -mtime -5 \
     | sort -rn \
     | head -1 \
